@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "declarationDir": "./dist/types",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",          // Needed for "paths" to work
+    "paths": {
+      "@/*": ["sdk/*"]
+    },
+  },
+  "include": ["sdk"],
+  "exclude": ["dist", "node_modules"]
+}
