@@ -1,11 +1,19 @@
 {
   "name": "flagmint-vuejs-feature-flags",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
   "type": "module",
-  "keywords": ["vue", "feature flags", "sdk", "flagmint", "feature-flags", "vue2", "vue3"],
+  "keywords": [
+    "vue",
+    "feature flags",
+    "sdk",
+    "flagmint",
+    "feature-flags",
+    "vue2",
+    "vue3"
+  ],
   "description": "A Vue.js SDK for managing feature flags in Flagmint applications, supporting both Vue 2 and Vue 3.",
   "author": "Flagmint Team",
   "license": "MIT",
@@ -40,6 +48,7 @@
     "vue-template-compiler": "^2.7.16"
   },
   "dependencies": {
+    "flagmint-js-sdk": "^1.0.6",
     "vue": "^2.7.0 || ^3.2.0",
     "vue-demi": "^0.14.10"
   },
@@ -54,7 +63,8 @@
       "types": "./dist/vue2.d.ts"
     },
     "./vue2/Feature": {
-      "import": "./dist/vue2-feature.mjs"
+      "import": "./dist/vue2-feature.mjs",
+      "types": "./dist/vue2-feature.d.ts"
     },
     "./vue3": {
       "import": "./dist/vue3.mjs",

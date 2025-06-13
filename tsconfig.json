@@ -11,7 +11,7 @@
     "esModuleInterop": true,
     "baseUrl": ".",          // Needed for "paths" to work
     "paths": {
-      "@/*": ["sdk/*"]
+      "@/*": ["sdk/*", "sdk/vue-shims.d.ts"]
     },
   },
   "include": ["sdk"],

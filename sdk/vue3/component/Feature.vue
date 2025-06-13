@@ -5,7 +5,7 @@
 
 <script lang="ts">
 import { defineComponent, inject, computed } from 'vue';
-import { FlagClient } from '@/core/client';
+import {useFlagmint} from '@/vue3/composable/useFlags';
 
 export default defineComponent({
   name: 'Feature',
@@ -13,8 +13,14 @@ export default defineComponent({
     featureKey: { type: String, required: true }
   },
   setup(props) {
-    const client = inject<FlagClient>('__flagmint__');
-    const enabled = computed(() =>  client ? client.getReactiveFlags()[props.featureKey] ?? false : false);
+    const { client, ready  } = useFlagmint();
+    if (!client) {
+      console.warn('Feature component requires a client to be injected.');
+      return { enabled: computed(() => false) };
+    }
+
+
+    const enabled = true
     return { enabled };
   }
 });

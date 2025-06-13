@@ -2,29 +2,26 @@
   <slot v-if="enabled"></slot>
 </template>
 
-<script lang="ts">
-import Vue from 'vue';
-import { FlagClient } from '@/core/client';
+<script>
+import { inject } from 'vue';
+import Feature from '/Users/izzymac/Documents/flagmint-vuejs-feature-flags-sdk/dist/vue3-feature.mjs';
 
-export default Vue.extend({
-  name: 'Feature',
-  props: {
-    featureKey: {
-      type: String,
-      required: true
+export default {
+  name: 'App',
+  components: { Feature },
+  setup() {
+    const flagClient = inject('__flagmint__');
+
+    function toggleFeature(key) {
+      if (flagClient) {
+        flagClient.flags[key] = !flagClient.flags[key];
+      }
     }
-  },
-  inject: {
-    flagClient: {
-      from: '__flagmint__'
-    }
-  },
-  computed: {
-    enabled() {
-      const client = this.flagClient | undefined;
-      if (!client) return false;
-     return client.getReactiveFlags()[this.featureKey] ?? false;
-    }
+
+    return {
+      flagClient,
+      toggleFeature
+    };
   }
-});
+};
 </script>

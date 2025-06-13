@@ -1,5 +1,5 @@
 // rollup.config.js
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 import dts from 'rollup-plugin-dts';
 import vue from 'rollup-plugin-vue';
 import resolve from '@rollup/plugin-node-resolve';
@@ -37,7 +37,9 @@ export default [
     resolve(),
     vue({ target: 'browser' }),
     commonjs(),
-    typescript()
+    typescript({
+      tsconfig: './tsconfig.json'
+    })
   ],
   external: ['vue', 'vue-demi']
 },

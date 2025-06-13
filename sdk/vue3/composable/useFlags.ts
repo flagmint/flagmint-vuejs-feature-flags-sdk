@@ -1,16 +1,21 @@
-import { inject } from 'vue';
-import type { FlagClient } from '@/core/client';
+import { inject, Ref } from 'vue';
+import { FLAGMINT_CLIENT, FLAGMINT_READY, FLAGMINT_INIT } from '@/plugin';
+import type { FlagClient } from 'flagmint-js-sdk';
 
-export function useFlags<T = unknown>() {
-  const client = inject<FlagClient<T>>('__flagmint__');
+export function useFlagmint<T = unknown>() {
+  let client: Ref<FlagClient<T> | null> | null = null;
+  let ready: Ref<boolean> | null = null;
+  let init: (() => Promise<FlagClient<T>>) | null = null;
 
-  if (!client) {
-    throw new Error('[useFlags] FlagClient instance not found. Did you forget to install the plugin?');
-  }
+  const resolve = () => {
+    client = inject(FLAGMINT_CLIENT, null);
+    ready = inject(FLAGMINT_READY, null);
+    init = inject(FLAGMINT_INIT, null);
+  };
 
   return {
-    flags: client.getReactiveFlags(),
-    getFlag: client.getFlag.bind(client),
-    updateContext: client.updateContext.bind(client),
+    client,
+    ready,
+    init
   };
 }
