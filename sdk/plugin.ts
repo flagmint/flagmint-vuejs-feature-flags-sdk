@@ -1,10 +1,7 @@
-import { isVue2, isVue3 } from 'vue-demi';
-import { FlagClient, FlagClientOptions } from 'flagmint-js-sdk';
-import { readonly, ref, Ref } from 'vue';
-import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from '@/types';
-
-
-
+import { isVue2, isVue3 } from "vue-demi";
+import { FlagClient, FlagClientOptions } from "flagmint-js-sdk";
+import { readonly, ref, Ref } from "vue";
+import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from "@/types";
 
 // Reactive references
 const flagClientRef: Ref<FlagClient<any, any> | null> = ref(null);
@@ -18,13 +15,14 @@ const createFeatureFlagPlugin = <
 ) => ({
   install(appOrVue: any) {
     // Provide early so inject() sees them before init
-    appOrVue.provide(FLAGMINT_READY, readonly(readyRef));
-    appOrVue.provide(FLAGMINT_CLIENT, flagClientRef);
+    if (isVue3) {
+      appOrVue.provide(FLAGMINT_READY, readonly(readyRef));
+      appOrVue.provide(FLAGMINT_CLIENT, flagClientRef);
+    }
 
     // Init function
     const init = async (): Promise<FlagClient<T, C>> => {
       if (flagClientRef.value) return flagClientRef.value; // Avoid re-init
-
 
       const client = new FlagClient<T, C>(options);
       await client.ready();
@@ -36,29 +34,58 @@ const createFeatureFlagPlugin = <
         appOrVue.config.globalProperties.$flagmint = flagClientRef;
         appOrVue.config.globalProperties.$flagmintReady = readyRef;
       } else if (isVue2) {
-        Object.defineProperty(appOrVue.prototype, '$flagmint', {
-          get() {
-            return flagClientRef.value;
-          }
-        });
-        Object.defineProperty(appOrVue.prototype, '$flagmintReady', {
-          get() {
-            return readyRef.value;
-          }
-        });
+        // Use Vue.observable to make the state reactive in Vue 2
+        const Vue = appOrVue.constructor;
+
+        if (Vue.observable && !Vue.prototype.$flagmintState) {
+          Vue.prototype.$flagmintState = Vue.observable({
+            flagClientRef,
+            readyRef,
+          });
+        }
+
+        if (!Object.getOwnPropertyDescriptor(Vue.prototype, "$flagmint")) {
+          Object.defineProperty(Vue.prototype, "$flagmint", {
+            configurable: true,
+            get() {
+              return Vue.prototype.$flagmintState.flagClientRef.value ?? null;
+            },
+          });
+        }
+
+        if (!Object.getOwnPropertyDescriptor(Vue.prototype, "$flagmintReady")) {
+          Object.defineProperty(Vue.prototype, "$flagmintReady", {
+            configurable: true,
+            get() {
+              return Vue.prototype.$flagmintState.readyRef.value?? null;
+            },
+          });
+        }
+
+        if (!Object.getOwnPropertyDescriptor(Vue.prototype, "$flagmintInit")) {
+          Object.defineProperty(Vue.prototype, "$flagmintInit", {
+            configurable: true,
+            value: init,
+          });
+        }
       }
 
       return client;
     };
 
     // Provide init
-    appOrVue.provide(FLAGMINT_INIT, init);
+    if (isVue3) {
+      appOrVue.provide(FLAGMINT_INIT, init);
+    } else if (isVue2) {
+      // Use Vue.prototype for Vue 2
+      appOrVue.prototype.$flagmintInit = init;
+    }
 
     // Auto-init if not deferred
     if (!options.deferInitialization) {
       void init();
     }
-  }
+  },
 });
 
 export function useFlagClient<T = unknown>() {

@@ -1,6 +1,6 @@
 {
   "name": "flagmint-vuejs-feature-flags",
-  "version": "1.0.17",
+  "version": "1.0.25",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
@@ -61,10 +61,6 @@
     "./vue2": {
       "import": "./dist/vue2.mjs",
       "types": "./dist/vue2.d.ts"
-    },
-    "./vue2/Feature": {
-      "import": "./dist/vue2-feature.mjs",
-      "types": "./dist/vue2-feature.d.ts"
     },
     "./vue3": {
       "import": "./dist/vue3.mjs",

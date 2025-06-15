@@ -9,7 +9,7 @@ const envReplacements = replace({
   preventAssignment: true,
   values: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-     preventAssignment: true,
+    preventAssignment: true,
   }
 });
 // Shared externals for Vue, Vue-Demi, and your symbols/types module
@@ -34,40 +34,27 @@ export default [
       { file: 'dist/vue2.mjs', format: 'esm' }
     ],
     plugins: [typescript()],
-   external: SHARED_EXTERNAL
+    external: SHARED_EXTERNAL
   },
-  {
-  input: 'sdk/vue2/component/Feature.vue',
-  output: [{ file: 'dist/vue2-feature.mjs', format: 'esm' }],
-  plugins: [
-    resolve(),
-    vue({ target: 'browser' }),
-    commonjs(),
-    typescript({
-      tsconfig: './tsconfig.json'
-    })
-  ],
- external: SHARED_EXTERNAL
-},
   {
     input: 'sdk/vue3/composable/useFlags.ts',
     output: [
       { file: 'dist/vue3.mjs', format: 'esm' }
     ],
     plugins: [typescript()],
-   external: SHARED_EXTERNAL
+    external: SHARED_EXTERNAL
   },
   {
-  input: 'sdk/vue3/component/Feature.vue',
-  output: [{ file: 'dist/vue3-feature.mjs', format: 'esm' }],
-  plugins: [
-    resolve(),
-    vue({ target: 'browser' }),
-    commonjs(),
-    typescript()
-  ],
- external: SHARED_EXTERNAL
-},
+    input: 'sdk/vue3/component/Feature.vue',
+    output: [{ file: 'dist/vue3-feature.mjs', format: 'esm' }],
+    plugins: [
+      resolve(),
+      vue({ target: 'browser' }),
+      commonjs(),
+      typescript()
+    ],
+    external: SHARED_EXTERNAL
+  },
   // Core Plugin (types)
   {
     input: 'sdk/index.ts',
