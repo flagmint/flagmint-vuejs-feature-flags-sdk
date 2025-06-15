@@ -20,25 +20,22 @@ export const useFlagsMixin: {
       featureFlags: {},
     };
   },
-
-  async created() {
-    // Safely get the plugin from Vue 2 prototype
-    const client = this.$flagmint;
-
-    // if (client && typeof client.fetchFlags === 'function') {
-    //   try {
-    //     this.featureFlags = await client.fetchFlags();
-    //   } catch (err) {
-    //     console.warn('[flagmint] Failed to fetch flags in mixin:', err);
-    //   }
-    // } else {
-    //   console.warn('[flagmint] FlagClient not available in useFlagsMixin');
-    // }
+async created() {
+    // Wait until client is ready
+    if (this.$flagmintReady) await this.$flagmintReady;
+    // Fetch all flags (or use client.getFlag per key)
+    if (typeof this.$flagmint.getFlag === 'function') {
+      try {
+        this.featureFlags = this.$flagmint;
+      } catch (err) {
+        console.warn('[flagmint] fetchAllFlags failed', err);
+      }
+    }
   },
 
   methods: {
     getFlag(key: string, fallback?: any): any {
-      return this.featureFlags[key] ?? fallback;
+      return this.featureFlags.getFlag[key] ?? fallback;
     }
   }
 };

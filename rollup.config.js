@@ -12,15 +12,21 @@ const envReplacements = replace({
      preventAssignment: true,
   }
 });
+// Shared externals for Vue, Vue-Demi, and your symbols/types module
+const SHARED_EXTERNAL = [
+  'vue',
+  'vue-demi',
+  'sdk/types'
+];
 export default [
   {
-    input: 'sdk/plugin.ts',
+    input: 'sdk/index.ts',
     output: [
       { file: 'dist/index.cjs.js', format: 'cjs' },
       { file: 'dist/index.esm.js', format: 'esm' }
     ],
     plugins: [envReplacements, typescript()],
-    external: ['vue', 'vue-demi']
+    external: SHARED_EXTERNAL
   },
   {
     input: 'sdk/vue2/mixin/useFlagsMixin.ts',
@@ -28,7 +34,7 @@ export default [
       { file: 'dist/vue2.mjs', format: 'esm' }
     ],
     plugins: [typescript()],
-    external: ['vue', 'vue-demi']
+   external: SHARED_EXTERNAL
   },
   {
   input: 'sdk/vue2/component/Feature.vue',
@@ -41,7 +47,7 @@ export default [
       tsconfig: './tsconfig.json'
     })
   ],
-  external: ['vue', 'vue-demi']
+ external: SHARED_EXTERNAL
 },
   {
     input: 'sdk/vue3/composable/useFlags.ts',
@@ -49,7 +55,7 @@ export default [
       { file: 'dist/vue3.mjs', format: 'esm' }
     ],
     plugins: [typescript()],
-    external: ['vue', 'vue-demi']
+   external: SHARED_EXTERNAL
   },
   {
   input: 'sdk/vue3/component/Feature.vue',
@@ -60,25 +66,28 @@ export default [
     commonjs(),
     typescript()
   ],
-  external: ['vue', 'vue-demi']
+ external: SHARED_EXTERNAL
 },
   // Core Plugin (types)
   {
-    input: 'sdk/plugin.ts',
+    input: 'sdk/index.ts',
     output: { file: 'dist/index.d.ts', format: 'es' },
     plugins: [dts()],
+    external: SHARED_EXTERNAL
   },
   // Vue 2 helper (types)
   {
     input: 'sdk/vue2/mixin/useFlagsMixin.ts',
     output: { file: 'dist/vue2.d.ts', format: 'es' },
     plugins: [dts()],
+    external: SHARED_EXTERNAL
   },
   // Vue 3 helper (types)
   {
     input: 'sdk/vue3/composable/useFlags.ts',
     output: { file: 'dist/vue3.d.ts', format: 'es' },
     plugins: [dts()],
+    external: SHARED_EXTERNAL
   }
 ];
 

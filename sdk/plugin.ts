@@ -1,11 +1,10 @@
 import { isVue2, isVue3 } from 'vue-demi';
 import { FlagClient, FlagClientOptions } from 'flagmint-js-sdk';
 import { readonly, ref, Ref } from 'vue';
+import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from '@/types';
 
-// Injection symbols
-export const FLAGMINT_INIT = Symbol('FLAGMINT_INIT');
-export const FLAGMINT_READY = Symbol('FLAGMINT_READY');
-export const FLAGMINT_CLIENT = Symbol('FLAGMINT_CLIENT');
+
+
 
 // Reactive references
 const flagClientRef: Ref<FlagClient<any, any> | null> = ref(null);
@@ -37,8 +36,16 @@ const createFeatureFlagPlugin = <
         appOrVue.config.globalProperties.$flagmint = flagClientRef;
         appOrVue.config.globalProperties.$flagmintReady = readyRef;
       } else if (isVue2) {
-        appOrVue.prototype.$flagmint = flagClientRef;
-        appOrVue.prototype.$flagmintReady = readyRef;
+        Object.defineProperty(appOrVue.prototype, '$flagmint', {
+          get() {
+            return flagClientRef.value;
+          }
+        });
+        Object.defineProperty(appOrVue.prototype, '$flagmintReady', {
+          get() {
+            return readyRef.value;
+          }
+        });
       }
 
       return client;

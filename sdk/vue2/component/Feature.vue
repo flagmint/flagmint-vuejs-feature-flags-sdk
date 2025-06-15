@@ -1,27 +1,32 @@
 <template>
-  <slot v-if="enabled"></slot>
+  <slot v-if="isFeatureEnabled"></slot>
 </template>
 
 <script>
-import { inject } from 'vue';
-import Feature from '/Users/izzymac/Documents/flagmint-vuejs-feature-flags-sdk/dist/vue3-feature.mjs';
+import { FlagsMixin } from '@/mixins/flagsMixin';
 
 export default {
-  name: 'App',
-  components: { Feature },
-  setup() {
-    const flagClient = inject('__flagmint__');
-
-    function toggleFeature(key) {
-      if (flagClient) {
-        flagClient.flags[key] = !flagClient.flags[key];
-      }
+  name: 'FlagmintFeature',
+  mixins: [FlagsMixin],
+  props: {
+    /**
+     * Accepts a single feature key or an array of keys.
+     * If multiple keys are provided, all must be enabled.
+     */
+    featureKeys: {
+      type: [String, Array],
+      required: true,
+    },
+  },
+  computed: {
+    isFeatureEnabled() {
+      // Wait until flags have been fetched
+      const keys = Array.isArray(this.featureKeys)
+        ? this.featureKeys
+        : [this.featureKeys];
+      // Return true only if all flags are enabled
+      return keys.every(key => this.getFlag(key, false));
     }
-
-    return {
-      flagClient,
-      toggleFeature
-    };
   }
 };
 </script>
