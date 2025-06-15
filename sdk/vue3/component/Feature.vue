@@ -54,13 +54,13 @@ export default defineComponent({
       return keys.every(key => client.value!.getFlag(key, false));
     });
 
-    return { enabled , client};
+    return { enabled , client };
   },
   unmounted() {
     // Cleanup if necessary
     console.info('Feature component unmounted and client destroyed.');
-    if (this.client && this.client.value && typeof this.client.value.destroy === 'function') {
-      this.client.value.destroy();
+    if (this.client && typeof this.client.destroy === 'function') {
+      this.client.destroy();
     }
   },
 });
