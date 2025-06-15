@@ -15,7 +15,7 @@ export default defineComponent({
      * If multiple keys are provided, all must be enabled.
      */
     featureKeys: {
-      type: [String, Array] as unknown as () => string | string[],
+      type: [String, Array] as PropType<string | string[]>,
       required: true,
     },
   },
