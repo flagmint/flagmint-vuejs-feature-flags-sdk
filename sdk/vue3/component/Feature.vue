@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, computed, Ref } from 'vue';
+import { defineComponent, inject, computed, Ref, PropType } from 'vue';
 import type { FlagClient } from 'flagmint-js-sdk';
 import { FLAGMINT_CLIENT, FLAGMINT_READY } from '@/types';
 
