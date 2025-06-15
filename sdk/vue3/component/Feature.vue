@@ -59,8 +59,8 @@ export default defineComponent({
   unmounted() {
     // Cleanup if necessary
     console.info('Feature component unmounted and client destroyed.');
-    if (this.client && typeof this.client.destroy === 'function') {
-      this.client.destroy();
+    if (this.client && this.client.value && typeof this.client.value.destroy === 'function') {
+      this.client.value.destroy();
     }
   },
 });
