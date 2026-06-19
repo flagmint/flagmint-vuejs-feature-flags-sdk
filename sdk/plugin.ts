@@ -1,11 +1,12 @@
 import { isVue2, isVue3 } from "vue-demi";
 import { FlagClient, FlagClientOptions } from "flagmint-js-sdk";
-import { readonly, ref, Ref } from "vue";
-import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from "@/types";
+import { readonly, ref, Ref, triggerRef } from "vue";
+import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT, FLAGMINT_STATE } from "@/types";
 
 // Reactive references
 const flagClientRef: Ref<FlagClient<any, any> | null> = ref(null);
 const readyRef = ref(false);
+const flagStateRef = ref(0);
 
 const createFeatureFlagPlugin = <
   T = unknown,
@@ -18,6 +19,7 @@ const createFeatureFlagPlugin = <
     if (isVue3) {
       appOrVue.provide(FLAGMINT_READY, readonly(readyRef));
       appOrVue.provide(FLAGMINT_CLIENT, flagClientRef);
+      appOrVue.provide(FLAGMINT_STATE, readonly(flagStateRef));
     }
 
     // Init function
@@ -30,6 +32,15 @@ const createFeatureFlagPlugin = <
       flagClientRef.value = client;
       readyRef.value = true;
 
+      // Subscribe to flag updates and trigger reactivity
+      client.subscribe(() => {
+        flagStateRef.value++;
+        // For Vue 3, also trigger the ref manually to ensure deep reactivity
+        if (isVue3) {
+          triggerRef(flagClientRef);
+        }
+      });
+
       if (isVue3) {
         appOrVue.config.globalProperties.$flagmint = flagClientRef;
         appOrVue.config.globalProperties.$flagmintReady = readyRef;
@@ -41,6 +52,7 @@ const createFeatureFlagPlugin = <
           Vue.prototype.$flagmintState = Vue.observable({
             flagClientRef,
             readyRef,
+            flagStateRef,
           });
         }
 
