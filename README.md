@@ -15,7 +15,7 @@ Supports:
 ## 🔧 Installation
 
 ```bash
-npm install vue-feature-flags-sdk
+npm install flagmint-vuejs-feature-flags
 ````
 
 ---
@@ -27,7 +27,7 @@ npm install vue-feature-flags-sdk
 ```ts
 // main.js
 import Vue from 'vue';
-import { createFlagmintPlugin } from 'vue-feature-flags-sdk';
+import { createFlagmintPlugin } from 'flagmint-vuejs-feature-flags';
 
 Vue.use(createFlagmintPlugin({
   apiKey: 'your-api-key',
@@ -48,7 +48,7 @@ new Vue({ render: h => h(App) }).$mount('#app');
 // main.ts
 import { createApp } from 'vue';
 import App from './App.vue';
-import { createFlagmintPlugin } from 'vue-feature-flags-sdk';
+import { createFlagmintPlugin } from 'flagmint-vuejs-feature-flags';
 
 const app = createApp(App);
 
@@ -168,7 +168,7 @@ export default {
 ### ✅ Vue 2 Mixin
 
 ```ts
-import { useFlagsMixin } from 'vue-feature-flags-sdk/vue2/useFlags';
+import { useFlagsMixin } from 'flagmint-vuejs-feature-flags/vue2/mixin/useFlagsMixin';
 
 export default {
   mixins: [useFlagsMixin],
@@ -186,7 +186,7 @@ export default {
 ### Option A: Composition API (Recommended)
 
 ```ts
-import { useFlagClient, useFlagmintReady } from 'vue-feature-flags-sdk';
+import { useFlagClient, useFlagmintReady } from 'flagmint-vuejs-feature-flags';
 
 export default {
   async setup() {
@@ -226,7 +226,7 @@ In Vue templates, use the `<Feature>` component:
 </template>
 
 <script>
-import { Feature } from 'vue-feature-flags-sdk/vue3/components';
+import { Feature } from 'flagmint-vuejs-feature-flags/vue3/component/Feature.vue';
 export default { components: { Feature } };
 </script>
 ```
@@ -276,6 +276,43 @@ Fallback to polling if WebSocket fails.
 
 ---
 
+## � Versioning & Releases
+
+This project follows [Semantic Versioning](https://semver.org/). Releases are automated via GitHub Actions:
+
+- Changes to `sdk/`, `package.json`, `rollup.config.js`, or `tsconfig.json` on the `main` branch trigger the release workflow
+- The workflow extracts the version from `package.json`, builds the package, and publishes to npm
+- Git tags and GitHub releases are automatically created
+
+**To release a new version:**
+1. Update the version in `package.json`
+2. Update [CHANGELOG.md](./CHANGELOG.md) with your changes
+3. Push to `main` branch
+4. The workflow handles the rest
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history and release notes.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to get started:
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Run tests: `npm test`
+4. Build the project: `npm run build`
+5. Create a feature branch: `git checkout -b feature/your-feature`
+6. Make your changes and commit
+7. Push to your fork and create a Pull Request
+
+**Development Tips:**
+- The SDK supports both Vue 2 and Vue 3 — test changes against both versions
+- Keep bundle size in mind when adding dependencies
+- Run tests before submitting PRs
+
+---
+
 ## 🗂 Roadmap
 
 * [x] Segment evaluation
@@ -290,7 +327,38 @@ Fallback to polling if WebSocket fails.
 
 ---
 
-## 🪪 License
+## 🐛 Troubleshooting
+
+### Flags not loading
+- Ensure `apiKey` is valid and environment has network access
+- Check browser console for errors
+- Verify `context` is properly set with required attributes
+- If using `previewMode: true`, ensure you've called `flagClient.setFlags()`
+
+### WebSocket connection fails
+- The SDK automatically falls back to long-polling
+- Check network connectivity and CORS settings
+- Verify the API server supports WebSocket connections
+- Check browser console for connection errors
+
+### Stale flags in offline cache
+- Clear localStorage or set `enableOfflineCache: false`
+- Adjust `cacheTTL` to control cache duration (in milliseconds)
+- Use `previewMode: true` for testing without network
+
+### Performance issues
+- Limit the number of flags in targeting rules
+- Use `getReactiveFlags()` for reactive updates instead of polling
+- Consider lazy-loading flags for large applications
+
+### TypeScript issues
+- Ensure `tsconfig.json` includes `sdk/` in `include` paths
+- Check that `node_modules` types are installed: `npm install`
+
+---
+
+## 📜 License
 
 MIT
+
 

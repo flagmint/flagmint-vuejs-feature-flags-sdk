@@ -1,35 +1,54 @@
-import { inject, Ref } from 'vue';
+import { inject, ref, watch, computed, onMounted, onUnmounted, Ref } from 'vue';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from '@/types';
 import type { FlagClient } from 'flagmint-js-sdk';
-/**
- * useFlagmint composable to access the FlagClient instance, its readiness state, and an initialization function.
- * This composable is designed to be used in Vue 3 applications to manage feature flags.
- * @returns An object containing the FlagClient instance, a boolean indicating if the client is ready, and an init function to initialize the client.
- */
+
 export function useFlagmint<T = unknown>() {
-  let client: Ref<FlagClient<T>> | null;
-  let isReady: Ref<boolean> | null;
-  let init: (() => Promise<FlagClient<T>>) | null;
+  // inject() called synchronously at top level — safe because provides
+  // are registered before install() returns, before any component mounts
+  const clientRef = inject<Ref<FlagClient<T> | null>>(FLAGMINT_CLIENT, ref(null));
+  const isReady = inject<Ref<boolean>>(FLAGMINT_READY, ref(false));
+  const init = inject<(() => Promise<FlagClient<T>>) | null>(FLAGMINT_INIT, null);
 
-  const resolve = () => {
-    client = inject(FLAGMINT_CLIENT, null);
-    isReady = inject(FLAGMINT_READY, null);
-    init = inject(FLAGMINT_INIT, null);
+  const flags = ref<Record<string, unknown>>({});
+  let unsubscribe: (() => void) | null = null;
 
+  const startSubscription = () => {
+    const client = clientRef.value;
+    if (!client || unsubscribe) return;
+    unsubscribe = client.subscribe((updatedFlags) => {
+      flags.value = updatedFlags as Record<string, unknown>;
+    });
+  };
+
+  // Watch isReady — handles both "already ready at mount" and "becomes ready later"
+  const stopWatch = watch(
+    () => isReady.value,
+    (ready) => {
+      if (ready) {
+        startSubscription();
+        stopWatch();
+      }
+    },
+    { immediate: true }
+  );
+
+  onUnmounted(() => {
+    stopWatch();
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+  });
+
+  const getFlag = <V = unknown>(key: string, fallback?: V): V => {
+    return (flags.value[key] ?? fallback) as V;
   };
 
   return {
-    get client() {
-      if (!client) resolve();
-      return client;
-    },
-    get isReady() {
-      if (!isReady) resolve();
-      return isReady;
-    },
-    get init() {
-      if (!init) resolve();
-      return init;
-    }
+    client: clientRef,
+    isReady,
+    init,
+    flags,
+    getFlag,
   };
 }
