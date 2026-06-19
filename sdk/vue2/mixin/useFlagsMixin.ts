@@ -1,65 +1,90 @@
-import type { FlagClient } from "flagmint-js-sdk";
+import type { FlagClient } from 'flagmint-js-sdk';
 
 type FlagsMixinThis = {
   $nextTick(arg0: () => void): unknown;
-  $watch(arg0: string, arg1: (val: any) => void): unknown;
-  $flagmintInit: any;
+  $watch(arg0: string, arg1: (val: any) => void): () => void;
+  $flagmintInit: () => Promise<FlagClient<any>>;
+  $flagmint: FlagClient<any> | null;
+  $flagmintReady: boolean; // It's a ref<boolean>, not a Promise
   flagClient: FlagClient<any> | null;
   isFlagReady: boolean;
+  flags: Record<string, unknown>;
   getFlag: (key: string, fallback?: any) => any;
-  // Add these to make TypeScript aware of injected properties
-  $flagmint: FlagClient<any>;
-  $flagmintReady?: Promise<void>;
+  _flagmintUnsubscribe: (() => void) | null;
+  _startFlagSubscription: () => void;
 };
 
 export const useFlagsMixin: {
   data: () => {
     isFlagReady: boolean;
     flagClient: FlagClient<any> | null;
-  },
-  created: () => Promise<void>;
-  mounted: () => void;
+    flags: Record<string, unknown>;
+    _flagmintUnsubscribe: (() => void) | null;
+  };
+  created(this: FlagsMixinThis): void;
+  beforeDestroy(this: FlagsMixinThis): void;
   methods: {
-    getFlag(key: string, fallback?: any): any;
+    getFlag(this: FlagsMixinThis, key: string, fallback?: any): any;
+    _startFlagSubscription(this: FlagsMixinThis): void;
   };
 } & ThisType<FlagsMixinThis> = {
- data() {
+  data() {
     return {
       isFlagReady: false,
       flagClient: null,
+      flags: {},                    // Reactive snapshot — updated on every push
+      _flagmintUnsubscribe: null,   // Holds the unsubscribe function
     };
   },
 
-  async created() {
-    if (typeof this.$flagmintReady !== 'undefined') {
-      await this.$flagmintReady;
+  created() {
+    if (this.$flagmintReady) {
+      // Already ready at creation time (e.g. deferred component)
       this.flagClient = this.$flagmint;
       this.isFlagReady = true;
+      this._startFlagSubscription();
+    } else if (typeof this.$flagmintInit === 'function') {
+      // Not ready yet — call init and wait
+      this.$flagmintInit().then((client) => {
+        this.flagClient = client;
+        this.isFlagReady = true;
+        this._startFlagSubscription();
+      });
+    } else {
+      // Watch for $flagmintReady to become true (plugin provided it as a reactive ref)
+      this.$watch('$flagmintReady', (val: boolean) => {
+        if (val) {
+          this.flagClient = this.$flagmint;
+          this.isFlagReady = true;
+          this._startFlagSubscription();
+        }
+      });
     }
   },
 
-  mounted() {
-    this.$nextTick(() => {
-      if (typeof this.$flagmintReady !== 'undefined') {
-        this.isFlagReady = true
-        this.$watch('$flagmintReady', (val) => {
-          this.isFlagReady = val;
-        });
-      } else if (typeof this.$flagmintInit === 'function') {
-        this.$flagmintInit().then((client: FlagClient<any, Record<string, any>> | null) => {
-          this.flagClient = client;
-          this.isFlagReady = true;
-        });
-      }
-    });
+  beforeDestroy() {
+    // Clean up subscription — never call destroy() on the shared client
+    if (this._flagmintUnsubscribe) {
+      this._flagmintUnsubscribe();
+      this._flagmintUnsubscribe = null;
+    }
   },
 
   methods: {
+    _startFlagSubscription() {
+      const client = this.flagClient;
+      if (!client || this._flagmintUnsubscribe) return;
+
+      // subscribe() calls back immediately with current flags,
+      // then on every WebSocket push — updates this.flags reactively
+      this._flagmintUnsubscribe = client.subscribe((updatedFlags) => {
+        this.flags = updatedFlags as Record<string, unknown>;
+      });
+    },
+
     getFlag(key, fallback) {
-      if (this.flagClient && typeof this.flagClient.getFlag === 'function') {
-        return this.flagClient.getFlag(key, fallback);
-      }
-      return fallback;
-    }
-  }
+      // Reads from reactive this.flags — re-renders on every push
+      return (this.flags[key] ?? fallback);
+    },
+  },
 };
