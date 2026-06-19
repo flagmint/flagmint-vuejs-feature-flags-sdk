@@ -1,0 +1,79 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Automated release workflow with GitHub Actions
+- Comprehensive README with troubleshooting guide
+- Contributing guidelines
+
+## [1.2.0] - 2026-06-19
+
+### Added
+- Vue 3 Composition API support with `useFlagClient()` and `useFlagmintReady()`
+- Vue 3 `<Feature>` component for conditional rendering
+- Offline caching with configurable TTL
+- Preview mode for local-only flag evaluation
+- WebSocket and long-polling transport options
+- Variant-based rollout strategies
+
+### Changed
+- Improved segment evaluation logic
+- Enhanced error handling with `onError` callback
+- Updated documentation with examples
+
+### Fixed
+- WebSocket connection fallback to long-polling
+- Context persistence across page reloads
+
+## [1.1.0] - 2026-03-15
+
+### Added
+- Vue 2 mixin support via `useFlagsMixin`
+- Global `$flagmint` property access
+- `$flagmintReady` initialization promise
+- Reactive flag updates with `getReactiveFlags()`
+
+### Added
+- Initial public release
+- Core flag evaluation engine
+- Segment targeting support
+- Rollout strategies (percentage-based)
+- Vue 2 and Vue 3 integration
+
+---
+
+## Changelog Guidelines
+
+When making changes, update this file following these rules:
+
+1. **Date Format**: Use `YYYY-MM-DD` format for release dates
+2. **Version Format**: Follow [Semantic Versioning](https://semver.org/) - MAJOR.MINOR.PATCH
+3. **Section Types**:
+   - `Added` - for new features
+   - `Changed` - for changes in existing functionality
+   - `Deprecated` - for features that will be removed soon
+   - `Removed` - for removed features
+   - `Fixed` - for bug fixes
+   - `Security` - for security-related changes
+
+4. **Before Releasing**:
+   - Move entries from `[Unreleased]` to the new version section
+   - Create a new release tag (handled by GitHub Actions workflow)
+   - Update version in `package.json`
+
+5. **Example Entry**:
+   ```markdown
+   ## [X.Y.Z] - YYYY-MM-DD
+
+   ### Added
+   - New feature description
+
+   ### Fixed
+   - Bug fix description
+   ```

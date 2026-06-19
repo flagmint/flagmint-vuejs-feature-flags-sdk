@@ -3,65 +3,77 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, computed, Ref, PropType } from 'vue';
+import { defineComponent, inject, ref, Ref, PropType, onMounted, onUnmounted, watch } from 'vue';
 import type { FlagClient } from 'flagmint-js-sdk';
 import { FLAGMINT_CLIENT, FLAGMINT_READY } from '@/types';
 
 export default defineComponent({
-  name: 'Feature',  
+  name: 'Feature',
+
   props: {
-    /**
-     * Accepts a single feature key or an array of keys.
-     * If multiple keys are provided, all must be enabled.
-     */
     featureKeys: {
       type: [String, Array] as PropType<string | string[]>,
       required: true,
     },
   },
+
   setup(props) {
-    const client = inject<Ref<FlagClient | null>>(FLAGMINT_CLIENT);
+    const clientRef = inject<Ref<FlagClient | null>>(FLAGMINT_CLIENT);
     const isReady = inject<Ref<boolean>>(FLAGMINT_READY);
 
-    if (!client || !isReady) {
-      console.warn('Flagmint plugin not installed or not provided.');
+    if (!clientRef || !isReady) {
+      console.warn('[Flagmint] Plugin not installed or not provided.');
     }
 
-    const enabled = computed(() => {
-      if (!isReady || !isReady.value || !client) {
-        return false;
+    const enabled = ref(false);
+
+    const evaluate = () => {
+      const client = clientRef?.value;
+      if (!client || !isReady?.value) {
+        enabled.value = false;
+        return;
       }
+
       const keys = Array.isArray(props.featureKeys)
         ? props.featureKeys
         : [props.featureKeys];
-      // Check if all feature flags are enabled
-      if (keys.length === 0) {
-        console.warn('No feature keys provided.');
-        return false;
-      }
-      // Use the client to check if each flag is enabled
-      if (keys.some(key => typeof key !== 'string')) {
-        console.warn('Feature keys must be strings.');
-        return false;
-      }
-      // Check if the client has the getFlag method
-      if (typeof client.value!.getFlag !== 'function') {
-        console.warn('Client does not have a getFlag method.', client);
-        return false;
+
+      if (keys.length === 0 || keys.some(k => typeof k !== 'string')) {
+        enabled.value = false;
+        return;
       }
 
-      // Return true only if all flags are enabled
-      return keys.every(key => client.value!.getFlag(key, false));
+      enabled.value = keys.every(key => client.getFlag(key, false));
+    };
+
+    // Re-evaluate when ready state changes (initial load)
+    watch(() => isReady?.value, evaluate, { immediate: true });
+
+    // Subscribe to live flag updates from the transport
+    let unsubscribe: (() => void) | null = null;
+
+    onMounted(() => {
+      const client = clientRef?.value;
+      if (!client) return;
+
+      // Subscribe to flag changes — re-evaluate on every push
+      unsubscribe = client.subscribe((flags) => {
+        const keys = Array.isArray(props.featureKeys)
+          ? props.featureKeys
+          : [props.featureKeys];
+        enabled.value = keys.every(key => !!flags[key]);
+      });
     });
 
-    return { enabled , client };
-  },
-  unmounted() {
-    // Cleanup if necessary
-    console.info('Feature component unmounted and client destroyed.');
-    if (this.client && typeof this.client.destroy === 'function') {
-      this.client.destroy();
-    }
+    onUnmounted(() => {
+      // Only clean up this component's subscription — never destroy the shared client
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+    });
+
+    return { enabled };
   },
 });
 </script>
