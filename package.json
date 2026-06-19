@@ -1,6 +1,6 @@
 {
   "name": "flagmint-vuejs-feature-flags",
-  "version": "1.0.25",
+  "version": "1.2.0",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
@@ -48,7 +48,7 @@
     "vue-template-compiler": "^2.7.16"
   },
   "dependencies": {
-    "flagmint-js-sdk": "^1.0.8",
+    "flagmint-js-sdk": "^1.2.5",
     "vue": "^2.7.0 || ^3.2.0",
     "vue-demi": "^0.14.10"
   },
