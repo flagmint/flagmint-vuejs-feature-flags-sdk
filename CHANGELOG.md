@@ -5,12 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] 2026.06-19
+- Rename <Feature> Component to <FlagmintFeatureGate> component 
+### Added
+
+## [1.3.0] 2026.06-19
 
 ### Added
 - Automated release workflow with GitHub Actions
 - Comprehensive README with troubleshooting guide
 - Contributing guidelines
+- <Feature> component destroy() bug fix
+- <Feature> reactivity fix (subscribe model)
+- useFlagmint composable rewrite (subscribe model, top-level inject)
+- Plugin module-level state scoped to install()
+- useFlagsMixin Vue 2 fixes (subscribe model, cleanup, type corrections)
 
 ## [1.2.0] - 2026-06-19
 
