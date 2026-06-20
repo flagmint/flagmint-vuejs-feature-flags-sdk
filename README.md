@@ -216,18 +216,19 @@ export default {
 
 ## 🧩 Feature Component
 
-In Vue templates, use the `<Feature>` component:
+In Vue templates, use the `<FlagmintFeatureGate>` component:
 
 ```vue
+// featureKeys is a string or array of strings representing the flags to be evaluated
 <template>
-  <Feature flag="dark-mode">
+  <FlagmintFeatureGate featureKeys="dark-mode|[dark-mode, new-dashboard]">
     <div>Dark mode is enabled!</div>
-  </Feature>
+  </FlagmintFeatureGate>
 </template>
 
 <script>
-import { Feature } from 'flagmint-vuejs-feature-flags/vue3/component/Feature.vue';
-export default { components: { Feature } };
+import { FlagmintFeatureGate } from 'flagmint-vuejs-feature-flags/vue3/component/FlagmintFeatureGate.vue';
+export default { components: { FlagmintFeatureGate } };
 </script>
 ```
 
@@ -286,11 +287,11 @@ This project follows [Semantic Versioning](https://semver.org/). Releases are au
 
 **To release a new version:**
 1. Update the version in `package.json`
-2. Update [CHANGELOG.md](./CHANGELOG.md) with your changes
+2. Update [CHANGELOG.md](https://github.com/jtad009/flagmint-vuejs-feature-flags-sdk/blob/main/CHANGELOG.md) with your changes
 3. Push to `main` branch
 4. The workflow handles the rest
 
-See [CHANGELOG.md](./CHANGELOG.md) for version history and release notes.
+See [CHANGELOG.md](https://github.com/jtad009/flagmint-vuejs-feature-flags-sdk/blob/main/CHANGELOG.md) for version history and release notes.
 
 ---
 
@@ -359,6 +360,6 @@ Contributions are welcome! Here's how to get started:
 
 ## 📜 License
 
-MIT
+BSD 3-Clause License
 
 
