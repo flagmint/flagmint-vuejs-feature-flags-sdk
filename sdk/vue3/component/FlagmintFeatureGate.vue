@@ -8,7 +8,7 @@ import type { FlagClient } from 'flagmint-js-sdk';
 import { FLAGMINT_CLIENT, FLAGMINT_READY } from '@/types';
 
 export default defineComponent({
-  name: 'Feature',
+  name: 'FlagmintFeatureGate',
 
   props: {
     featureKeys: {
