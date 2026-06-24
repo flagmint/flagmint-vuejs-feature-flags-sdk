@@ -14,7 +14,8 @@ const createFeatureFlagPlugin = <
     const flagClientRef: Ref<FlagClient<T, C> | null> = ref(null);
     const readyRef = ref(false);
     const flagStateRef = ref(0);
-
+     //single in-flight promise shared across all concurrent init() callers
+    let initPromise: Promise<FlagClient<T, C>> | null = null;
     // Provide early — inject() in components will see these immediately,
     // flagClientRef.value is null until init() resolves which is expected
     if (isVue3) {
@@ -24,49 +25,60 @@ const createFeatureFlagPlugin = <
     }
 
     const init = async (): Promise<FlagClient<T, C>> => {
+      // Already initialised — return existing client
       if (flagClientRef.value) return flagClientRef.value;
+      // Init in flight — return the same promise instead of creating a second client
+      if (initPromise) return initPromise;
 
-      const client = new FlagClient<T, C>(options);
-      await client.ready();
+      initPromise = (async () => {
+        const client = new FlagClient<T, C>(options);
+        await client.ready();
 
-      flagClientRef.value = client;
-      readyRef.value = true;
+        flagClientRef.value = client;
+        readyRef.value = true;
 
+        client.subscribe(() => {
+          flagStateRef.value++;
+          if (isVue3) triggerRef(flagClientRef);
+        });
 
-      if (isVue3) {
-        appOrVue.config.globalProperties.$flagmint = flagClientRef;
-        appOrVue.config.globalProperties.$flagmintReady = readyRef;
-      } else if (isVue2) {
-        const Vue = appOrVue.constructor;
-        if (Vue.observable && !Vue.prototype.$flagmintState) {
-          Vue.prototype.$flagmintState = Vue.observable({
-            flagClientRef,
-            readyRef,
-            flagStateRef,
+        if (isVue3) {
+          appOrVue.config.globalProperties.$flagmint = flagClientRef;
+          appOrVue.config.globalProperties.$flagmintReady = readyRef;
+        } else if (isVue2) {
+          const Vue = appOrVue.constructor;
+          if (Vue.observable && !Vue.prototype.$flagmintState) {
+            Vue.prototype.$flagmintState = Vue.observable({
+              flagClientRef,
+              readyRef,
+              flagStateRef,
+            });
+          }
+
+          const define = (key: string, descriptor: PropertyDescriptor) => {
+            if (!Object.getOwnPropertyDescriptor(Vue.prototype, key)) {
+              Object.defineProperty(Vue.prototype, key, descriptor);
+            }
+          };
+
+          define('$flagmint', {
+            configurable: true,
+            get() { return Vue.prototype.$flagmintState.flagClientRef.value ?? null; },
+          });
+          define('$flagmintReady', {
+            configurable: true,
+            get() { return Vue.prototype.$flagmintState.readyRef.value ?? null; },
+          });
+          define('$flagmintInit', {
+            configurable: true,
+            value: init,
           });
         }
 
-        const define = (key: string, descriptor: PropertyDescriptor) => {
-          if (!Object.getOwnPropertyDescriptor(Vue.prototype, key)) {
-            Object.defineProperty(Vue.prototype, key, descriptor);
-          }
-        };
+        return client;
+      })();
 
-        define('$flagmint', {
-          configurable: true,
-          get() { return Vue.prototype.$flagmintState.flagClientRef.value ?? null; },
-        });
-        define('$flagmintReady', {
-          configurable: true,
-          get() { return Vue.prototype.$flagmintState.readyRef.value ?? null; },
-        });
-        define('$flagmintInit', {
-          configurable: true,
-          value: init,
-        });
-      }
-
-      return client;
+      return initPromise;
     };
 
     if (isVue3) {
