@@ -2,7 +2,9 @@ import { inject, ref, watch, onUnmounted, Ref } from 'vue';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from '@/types';
 import type { FlagClient } from 'flagmint-js-sdk';
 
-
+const flags = ref<Record<string, unknown>>({});
+let unsubscribe: (() => void) | null = null;
+let subscriberCount = 0;
 export function useFlagmint<T = unknown>() {
   // inject() called synchronously at top level — safe because provides
   // are registered before install() returns, before any component mounts
@@ -10,10 +12,10 @@ export function useFlagmint<T = unknown>() {
   const isReady = inject<Ref<boolean>>(FLAGMINT_READY, ref(false));
   const init = inject<(() => Promise<FlagClient<T>>) | null>(FLAGMINT_INIT, null);
 
-  const flags = ref<Record<string, unknown>>({});
-  let unsubscribe: (() => void) | null = null;
+  
 
   const startSubscription = () => {
+    subscriberCount++;
     const client = clientRef.value;
     if (!client || unsubscribe) return;
     unsubscribe = client.subscribe((updatedFlags) => {
@@ -34,8 +36,9 @@ export function useFlagmint<T = unknown>() {
   );
 
   onUnmounted(() => {
+    subscriberCount--;
     stopWatch();
-    if (unsubscribe) {
+    if (unsubscribe && subscriberCount === 0) {
       unsubscribe();
       unsubscribe = null;
     }
