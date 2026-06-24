@@ -19,6 +19,8 @@
   "license": "MIT",
   "files": [
     "dist",
+    "vue2",
+    "vue3",
     "README.md"
   ],
   "sideEffects": false,
@@ -60,10 +62,12 @@
     },
     "./vue2": {
       "import": "./dist/vue2.mjs",
+      "require": "./dist/vue2.cjs.js",
       "types": "./dist/vue2.d.ts"
     },
     "./vue3": {
       "import": "./dist/vue3.mjs",
+      "require": "./dist/vue3.cjs.js",
       "types": "./dist/vue3.d.ts"
     },
     "./vue3/BoolFeatureGate": {
