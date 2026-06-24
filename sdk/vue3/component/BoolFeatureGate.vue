@@ -8,7 +8,7 @@ import type { FlagClient } from 'flagmint-js-sdk';
 import { FLAGMINT_CLIENT, FLAGMINT_READY } from '@/types';
 
 export default defineComponent({
-  name: 'FlagmintFeatureGate',
+  name: 'BoolFeatureGate',
 
   props: {
     featureKeys: {
@@ -43,7 +43,13 @@ export default defineComponent({
         return;
       }
 
-      enabled.value = keys.every(key => client.getFlag(key, false));
+      enabled.value = keys.every(key => {
+        const value = client.getFlag(key, false);
+        if (typeof value !== 'boolean') {
+          console.warn(`[BoolFeatureGate] Flag "${key}" is not a boolean (got ${typeof value}). Gate requires exactly true, not just truthy values.`);
+        }
+        return value === true;
+      });
     };
 
     // Re-evaluate when ready state changes (initial load)
@@ -61,7 +67,13 @@ export default defineComponent({
         const keys = Array.isArray(props.featureKeys)
           ? props.featureKeys
           : [props.featureKeys];
-        enabled.value = keys.every(key => !!flags[key]);
+        enabled.value = keys.every(key => {
+          const value = flags[key];
+          if (typeof value !== 'boolean') {
+            console.warn(`[BoolFeatureGate] Flag "${key}" is not a boolean (got ${typeof value}). Gate requires exactly true, not just truthy values.`);
+          }
+          return value === true;
+        });
       });
     });
 
