@@ -30,7 +30,8 @@ export default [
   {
     input: 'sdk/vue2/mixin/useFlagsMixin.ts',
     output: [
-      { file: 'dist/vue2.mjs', format: 'esm' }
+      { file: 'dist/vue2.mjs', format: 'esm' },
+      { file: 'dist/vue2.cjs.js', format: 'cjs' }
     ],
     plugins: [typescript()],
     external: SHARED_EXTERNAL
@@ -38,7 +39,8 @@ export default [
   {
     input: 'sdk/vue3/composable/useFlags.ts',
     output: [
-      { file: 'dist/vue3.mjs', format: 'esm' }
+      { file: 'dist/vue3.mjs', format: 'esm' },
+      { file: 'dist/vue3.cjs.js', format: 'cjs' }
     ],
     plugins: [typescript()],
     external: SHARED_EXTERNAL
