@@ -32,14 +32,6 @@ const createFeatureFlagPlugin = <
       flagClientRef.value = client;
       readyRef.value = true;
 
-      // Subscribe to flag updates — increment flagStateRef to bust
-      // any computed/watch that depends on it, and trigger the client ref
-      client.subscribe(() => {
-        flagStateRef.value++;
-        if (isVue3) {
-          triggerRef(flagClientRef);
-        }
-      });
 
       if (isVue3) {
         appOrVue.config.globalProperties.$flagmint = flagClientRef;
