@@ -44,7 +44,7 @@ export default [
     external: SHARED_EXTERNAL
   },
   {
-    input: 'sdk/vue3/component/FlagmintFeatureGate.vue',
+    input: 'sdk/vue3/component/BoolFeatureGate.vue',
     output: [{ file: 'dist/vue3-flagmint-feature-gate.mjs', format: 'esm' }],
     plugins: [
       resolve(),

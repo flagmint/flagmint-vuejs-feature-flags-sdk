@@ -1,6 +1,6 @@
 import { isVue2, isVue3 } from 'vue-demi';
 import { FlagClient, FlagClientOptions } from 'flagmint-js-sdk';
-import { readonly, ref, Ref, triggerRef } from 'vue';
+import { readonly, ref, Ref, triggerRef } from 'vue-demi';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT, FLAGMINT_STATE } from '@/types';
 
 const createFeatureFlagPlugin = <
