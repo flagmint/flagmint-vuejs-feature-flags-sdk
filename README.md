@@ -75,6 +75,7 @@ interface FlagClientOptions {
   autoRefresh?: boolean;
   refreshIntervalMs?: number;
   persistContext?: boolean;
+  env?: string; // production | staging
   enableOfflineCache?: boolean;
   cacheTTL?: number;
   transportMode?: 'auto' | 'websocket' | 'long-polling';
@@ -89,65 +90,61 @@ interface FlagClientOptions {
 
 ### ✅ Recommended (Reactive Flags)
 
+Subscribe to flag updates so your component re-renders automatically on every WebSocket push:
+
 ```ts
-const flags = this.$flagmint.getReactiveFlags();
-console.log(flags['dark-mode']); // updates reactively when flag changes
+// Vue 3 Composition API
+import { useFlagmint } from 'flagmint-vuejs-feature-flags';
+
+const { getFlag, isReady } = useFlagmint();
+const darkMode = computed(() => getFlag('dark-mode', false));
 ```
 
-### ⚠️ Non-reactive (useful for quick access)
+```ts
+// Vue 2 (via mixin)
+export default {
+  mixins: [useFlagsMixin],
+  mounted() {
+    console.log(this.flags['dark-mode']);
+    console.log(this.getFlag('dark-mode', false));
+  }
+}
+```
+
+### ⚠️ Non-reactive (snapshot only, won't update on push)
 
 ```ts
 const enabled = this.$flagmint.getFlag('dark-mode', false);
 ```
 
+Use this only when you genuinely need a one-time read (e.g. inside a non-reactive utility function). For anything rendered in a template, use the reactive pattern above.
+
 ---
 
 ## ⏳ Await Initialization
 
-You may need to wait until flags are loaded:
+`$flagmintReady` is a reactive boolean ref, not a Promise — watch it rather than awaiting it:
 
 ```ts
-await this.$flagmintReady;
+// Vue 2
+this.$watch('$flagmintReady', (ready) => {
+  if (ready) { /* client is ready */ }
+});
 ```
 
-or in Vue 3:
-
 ```ts
-await useFlagmintReady();
+// Vue 3
+import { useFlagmintReady } from 'flagmint-vuejs-feature-flags';
+const isReady = useFlagmintReady(); // Ref<boolean>
+watch(isReady, (ready) => {
+  if (ready) { /* client is ready */ }
+});
 ```
 
----
-
-## 💡 Segment Rules + Rollout
-
-Each flag can define:
-
-* `targeting_rules` (direct conditions or segment references)
-* `rollout` (percentage or variant-based strategies)
-
-Example flag:
+If you need a one-time async wait (e.g. before an `onMounted` block runs), call the injected `init()` function instead — it returns a Promise that resolves once the client is ready:
 
 ```ts
-{
-  key: 'new-ui',
-  type: 'boolean',
-  value: true,
-  targeting_rules: [
-    { type: 'rule', attribute: 'country', operator: 'eq', value: 'NG' },
-    { type: 'segment', segment_id: 'premium-users' }
-  ],
-  rollout: {
-    strategy: 'percentage',
-    percentage: 50,
-    salt: 'xyz'
-  },
-  segmentsById: {
-    'premium-users': {
-      id: 'premium-users',
-      rules: [{ attribute: 'plan', operator: 'eq', value: 'pro', type: 'rule' }]
-    }
-  }
-}
+const client = await this.$flagmintInit(); // Vue 2
 ```
 
 ---
@@ -159,8 +156,8 @@ Example flag:
 ```ts
 export default {
   async mounted() {
-    await this.$flagmintReady;
-    const enabled = this.$flagmint.getFlag('dark-mode', false);
+    const client = await this.$flagmintInit();
+    const enabled = client.getFlag('dark-mode', false);
   }
 }
 ```
@@ -173,7 +170,7 @@ import { useFlagsMixin } from 'flagmint-vuejs-feature-flags/vue2/mixin/useFlagsM
 export default {
   mixins: [useFlagsMixin],
   mounted() {
-    console.log(this.featureFlags['dark-mode']);
+    console.log(this.flags['dark-mode']);
     console.log(this.getFlag('dark-mode', false));
   }
 }
@@ -186,13 +183,12 @@ export default {
 ### Option A: Composition API (Recommended)
 
 ```ts
-import { useFlagClient, useFlagmintReady } from 'flagmint-vuejs-feature-flags';
+import { useFlagmint } from 'flagmint-vuejs-feature-flags';
 
 export default {
-  async setup() {
-    await useFlagmintReady();
-    const flags = useFlagClient();
-    const feature = flags.getFlag('chat-enabled', false);
+  setup() {
+    const { getFlag, isReady } = useFlagmint();
+    const feature = computed(() => getFlag('chat-enabled', false));
     return { feature };
   }
 }
@@ -216,21 +212,24 @@ export default {
 
 ## 🧩 Feature Component
 
-In Vue templates, use the `<FlagmintFeatureGate>` component:
+In Vue templates, use the `<BoolFeatureGate>` component:
+<BoolFeatureGate> is for boolean flags only, and string/number/JSON flags should be read via getFlag() directly and branched on with v-if.
 
 ```vue
-// featureKeys is a string or array of strings representing the flags to be evaluated
 <template>
-  <FlagmintFeatureGate featureKeys="dark-mode|[dark-mode, new-dashboard]">
+  <BoolFeatureGate featureKeys="['dark-mode']">
     <div>Dark mode is enabled!</div>
-  </FlagmintFeatureGate>
+  </BoolFeatureGate>
 </template>
 
-<script>
-import { FlagmintFeatureGate } from 'flagmint-vuejs-feature-flags/vue3/component/FlagmintFeatureGate.vue';
-export default { components: { FlagmintFeatureGate } };
+<script setup lang="ts">
+import { BoolFeatureGate } from 'flagmint-vuejs-feature-flags/vue3/Feature';
 </script>
 ```
+
+`feature-keys` accepts a single string or an array of strings. If multiple keys are provided, **all** must be enabled.
+
+> ⚠️ **Important:** Never call `client.destroy()` from within a component or composable. `destroy()` tears down the shared WebSocket connection for the entire application. If you're building a custom integration around `FlagClient`, only ever call `client.subscribe()` and its returned unsubscribe function for component-level cleanup.
 
 ---
 
@@ -277,7 +276,7 @@ Fallback to polling if WebSocket fails.
 
 ---
 
-## � Versioning & Releases
+## 📦 Versioning & Releases
 
 This project follows [Semantic Versioning](https://semver.org/). Releases are automated via GitHub Actions:
 
@@ -311,6 +310,7 @@ Contributions are welcome! Here's how to get started:
 - The SDK supports both Vue 2 and Vue 3 — test changes against both versions
 - Keep bundle size in mind when adding dependencies
 - Run tests before submitting PRs
+- Never call `client.destroy()` from a component, mixin, or composable — only the plugin/app-level teardown should own that call
 
 ---
 
@@ -342,6 +342,10 @@ Contributions are welcome! Here's how to get started:
 - Verify the API server supports WebSocket connections
 - Check browser console for connection errors
 
+### Component re-renders not happening on flag updates
+- Make sure you're using the reactive pattern (`useFlagmint()` composable or `useFlagsMixin`) rather than calling `client.getFlag()` directly in a `computed`. The client's internal flag state is not a Vue reactive object — only the `subscribe()`-backed wrappers re-render correctly
+- If you unmounted and remounted a `<BoolFeatureGate>` and updates stopped working app-wide, confirm nothing in your codebase calls `client.destroy()` outside of app-level teardown
+
 ### Stale flags in offline cache
 - Clear localStorage or set `enableOfflineCache: false`
 - Adjust `cacheTTL` to control cache duration (in milliseconds)
@@ -349,7 +353,7 @@ Contributions are welcome! Here's how to get started:
 
 ### Performance issues
 - Limit the number of flags in targeting rules
-- Use `getReactiveFlags()` for reactive updates instead of polling
+- Use the `subscribe()`-backed reactive pattern (via composable or mixin) instead of polling `getFlag()` in a loop
 - Consider lazy-loading flags for large applications
 
 ### TypeScript issues
@@ -361,5 +365,3 @@ Contributions are welcome! Here's how to get started:
 ## 📜 License
 
 BSD 3-Clause License
-
-

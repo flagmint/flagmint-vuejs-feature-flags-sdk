@@ -1,6 +1,7 @@
-import { inject, ref, watch, computed, onMounted, onUnmounted, Ref } from 'vue';
+import { inject, ref, watch, onUnmounted, Ref } from 'vue';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT } from '@/types';
 import type { FlagClient } from 'flagmint-js-sdk';
+
 
 export function useFlagmint<T = unknown>() {
   // inject() called synchronously at top level — safe because provides
@@ -44,11 +45,21 @@ export function useFlagmint<T = unknown>() {
     return (flags.value[key] ?? fallback) as V;
   };
 
+  const updateContext = async (context: Record<string, any>): Promise<void> => {
+    const client = clientRef.value;
+    if (!client) {
+      console.warn('[Flagmint] updateContext called before client was ready.');
+      return;
+    }
+    await client.updateContext(context);
+  };
+
   return {
     client: clientRef,
     isReady,
     init,
     flags,
     getFlag,
+    updateContext
   };
 }
