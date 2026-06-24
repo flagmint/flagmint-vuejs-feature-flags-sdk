@@ -67,7 +67,7 @@
       "types": "./dist/vue3.d.ts"
     },
     "./vue3/BoolFeatureGate": {
-      "import": "./dist/vue3-flagmint-feature-gate.mjs"
+      "import": "./dist/vue3-bool-feature-gate.mjs"
     }
   }
 }
