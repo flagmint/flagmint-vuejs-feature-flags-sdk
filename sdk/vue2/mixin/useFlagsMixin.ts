@@ -12,7 +12,7 @@ type FlagsMixinThis = {
   getFlag: (key: string, fallback?: any) => any;
   _flagmintUnsubscribe: (() => void) | null;
   _startFlagSubscription: () => void;
-  updateContext: (context: Record<string, any>) => Promise<void>;
+  updateFlagmintContext: (context: Record<string, any>) => Promise<void>;
 };
 
 export const useFlagsMixin: {
@@ -27,7 +27,7 @@ export const useFlagsMixin: {
   methods: {
     getFlag(this: FlagsMixinThis, key: string, fallback?: any): any;
     _startFlagSubscription(this: FlagsMixinThis): void;
-    updateContext(this: FlagsMixinThis, context: Record<string, any>): Promise<void>;
+    updateFlagmintContext(this: FlagsMixinThis, context: Record<string, any>): Promise<void>;
   };
 } & ThisType<FlagsMixinThis> = {
   data() {
@@ -88,11 +88,11 @@ export const useFlagsMixin: {
       // Reads from reactive this.flags — re-renders on every push
       return (this.flags[key] ?? fallback);
     },
-    async updateContext(context: Record<string, any>) {
+    async updateFlagmintContext(context: Record<string, any>) {
       if (this.flagClient && typeof this.flagClient.updateContext === 'function') {
         await this.flagClient.updateContext(context);
       } else {
-        console.warn('[Flagmint] updateContext called before client was ready.');
+        console.warn('[Flagmint] updateFlagmintContext called before client was ready.');
       }
     }
   },
