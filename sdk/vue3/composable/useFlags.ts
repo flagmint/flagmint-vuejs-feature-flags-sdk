@@ -48,10 +48,10 @@ export function useFlagmint<T = unknown>() {
     return (flags.value[key] ?? fallback) as V;
   };
 
-  const updateContext = async (context: Record<string, any>): Promise<void> => {
+  const updateFlagmintContext = async (context: Record<string, any>): Promise<void> => {
     const client = clientRef.value;
     if (!client) {
-      console.warn('[Flagmint] updateContext called before client was ready.');
+      console.warn('[Flagmint] updateFlagmintContext called before client was ready.');
       return;
     }
     await client.updateContext(context);
@@ -63,6 +63,6 @@ export function useFlagmint<T = unknown>() {
     init,
     flags,
     getFlag,
-    updateContext
+    updateFlagmintContext
   };
 }
