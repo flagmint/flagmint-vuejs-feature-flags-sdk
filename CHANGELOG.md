@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.3.7] - 2026-06-29
+
+### Fixed
+- `useFlagmint` composable: resolved temporal dead zone crash (`ReferenceError: can't access lexical declaration 'stopWatch' before initialization`) when the plugin was already initialised before a component mounted. The `watch` callback with `{ immediate: true }` fired synchronously before `const stopWatch` was assigned; refactored to use `let` to avoid the forward reference.
+- `BoolFeatureGate`: updated slot API from a single default slot to named `#enabled` and `#disabled` slots, allowing components to declaratively render fallback UI when a flag is off without additional `v-if`/`v-else` logic in the consuming component.
+
 
 ## [1.3.2] 2026-06-24
 - Add support for updating context using the updateContext function

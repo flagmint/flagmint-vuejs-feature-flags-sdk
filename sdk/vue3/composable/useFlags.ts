@@ -13,7 +13,14 @@ export function useFlagmint<T = unknown>() {
   const init = inject<(() => Promise<FlagClient<T>>) | null>(FLAGMINT_INIT, null);
 
   
+  let stopWatch: (() => void) | null = null;
 
+  const onReady = (ready: boolean) => {
+    if (ready) {
+      startSubscription();
+      stopWatch?.();
+    }
+  };
   const startSubscription = () => {
     subscriberCount++;
     const client = clientRef.value;
@@ -24,20 +31,11 @@ export function useFlagmint<T = unknown>() {
   };
 
   // Watch isReady — handles both "already ready at mount" and "becomes ready later"
-  const stopWatch = watch(
-    () => isReady.value,
-    (ready) => {
-      if (ready) {
-        startSubscription();
-        stopWatch();
-      }
-    },
-    { immediate: true }
-  );
+  stopWatch = watch(() => isReady.value, onReady, { immediate: true });;
 
   onUnmounted(() => {
     subscriberCount--;
-    stopWatch();
+    stopWatch?.();
     if (unsubscribe && subscriberCount === 0) {
       unsubscribe();
       unsubscribe = null;
