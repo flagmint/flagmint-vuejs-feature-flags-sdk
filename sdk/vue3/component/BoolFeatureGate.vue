@@ -1,5 +1,6 @@
 <template>
-  <slot v-if="enabled" />
+  <slot v-if="enabled" name="enabled" />
+  <slot v-else name="disabled" />
 </template>
 
 <script lang="ts">
@@ -9,14 +10,12 @@ import { FLAGMINT_CLIENT, FLAGMINT_READY } from '@/types';
 
 export default defineComponent({
   name: 'BoolFeatureGate',
-
   props: {
     featureKeys: {
       type: [String, Array] as PropType<string | string[]>,
       required: true,
     },
   },
-
   setup(props) {
     const clientRef = inject<Ref<FlagClient | null>>(FLAGMINT_CLIENT);
     const isReady = inject<Ref<boolean>>(FLAGMINT_READY);
@@ -52,21 +51,19 @@ export default defineComponent({
       });
     };
 
-    // Re-evaluate when ready state changes (initial load)
     watch(() => isReady?.value, evaluate, { immediate: true });
 
-    // Subscribe to live flag updates from the transport
     let unsubscribe: (() => void) | null = null;
 
     onMounted(() => {
       const client = clientRef?.value;
       if (!client) return;
 
-      // Subscribe to flag changes — re-evaluate on every push
       unsubscribe = client.subscribe((flags) => {
         const keys = Array.isArray(props.featureKeys)
           ? props.featureKeys
           : [props.featureKeys];
+
         enabled.value = keys.every(key => {
           const value = flags[key];
           if (typeof value !== 'boolean') {
@@ -78,7 +75,6 @@ export default defineComponent({
     });
 
     onUnmounted(() => {
-      // Only clean up this component's subscription — never destroy the shared client
       if (unsubscribe) {
         unsubscribe();
         unsubscribe = null;
