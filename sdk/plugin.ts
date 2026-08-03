@@ -181,7 +181,10 @@ const createFeatureFlagPlugin = <
         if (type === 'HEARTBEAT') {
           if (!isLeader) {
             keepAsFollower();
-          } else if (leaderId !== instanceId && leaderId < instanceId) {
+            return 
+          } 
+          
+        if (isLeader && leaderId !== instanceId && leaderId < instanceId) {
             if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
             if (underlyingClient) { underlyingClient.destroy(); underlyingClient = null; }
             keepAsFollower();
