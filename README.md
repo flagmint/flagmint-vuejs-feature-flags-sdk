@@ -9,7 +9,7 @@ Supports:
 ✅ WebSocket or HTTP long-polling  
 ✅ Offline caching and preview mode  
 ✅ Vue 2 and Vue 3 plugin, composables, and helpers
-
+✅ Cross-Iframe & Multi-Tab Socket Optimization (Leader Election)
 ---
 
 ## 🔧 Installation
@@ -34,7 +34,11 @@ Vue.use(createFlagmintPlugin({
   context: { user_id: 'abc123', country: 'NG' },
   transportMode: 'auto',
   autoRefresh: true,
-  previewMode: false
+  previewMode: false,
+  // Optional Cross-Iframe Optimization Parameters:
+  syncCrossIframes: true,
+  syncNamespace: 'wsd_app_prod'
+
 }));
 
 new Vue({ render: h => h(App) }).$mount('#app');
@@ -56,7 +60,10 @@ app.use(createFlagmintPlugin({
   apiKey: 'your-api-key',
   context: { user_id: 'abc123' },
   transportMode: 'auto',
-  previewMode: false
+  previewMode: false,
+   // Optional Cross-Iframe Optimization Parameters:
+  syncCrossIframes: true,
+  syncNamespace: 'wsd_app_prod'
 }));
 
 app.mount('#app');
@@ -81,12 +88,27 @@ interface FlagClientOptions {
   transportMode?: 'auto' | 'websocket' | 'long-polling';
   previewMode?: boolean;
   onError?: (err: Error) => void;
+
+  // Framework Extension Parameters
+  deferInitialization?: boolean;
+  syncCrossIframes?: boolean; // Collapses multiple nested iframes/tabs down to 1 open socket
+  syncNamespace?: string;     // Unique isolation scope descriptor to prevent account data bleed
 }
 ```
 
 ---
 
 ## 🎯 Using Flags
+
+### Cross-Iframe & Multi-Tab Connection Sharing
+
+When embedding your Vue application multiple times on a single webpage using nested `iframe` configurations (or when a user leaves your app open across multiple simultaneous browser windows), initializing separate WebSockets or SSE streams per view causes significant connection overhead.
+
+Setting syncCrossIframes: true leverages a reactive browser mesh network strategy via the BroadcastChannel API and Page Visibility API to solve this issue seamlessly.
+
+```
+🔒 Security Notice: Always match your syncNamespace parameter configuration with your underlying profile or customer session parameters (e.g. syncNamespace: currentSiteId). This isolates the messaging context and prevents separate client scopes from accidentally reading or blending flag variants in multi-tenant environments.
+
 
 ### ✅ Recommended (Reactive Flags)
 
@@ -208,6 +230,15 @@ export default {
 }
 ```
 
+---
+
+## 💡 Debugging Broadcast Channels in DevTools
+
+To verify that multiple frames are collapsing down to a single socket on your local device environment:
+- Open Chrome/Edge DevTools (F12) and head to the Application tab.
+- In the left panel section menu, find Background Services and click on Broadcast Channels.
+- Reload your project page setup. You will see your namespace registration signature.
+- Click on your project Network panel tab. Confirm that switching windows or updating your cloud variables updates all views concurrently while creating exactly one websocket initialization record track.
 ---
 
 ## 🧩 Feature Component
