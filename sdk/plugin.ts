@@ -38,7 +38,13 @@ const createFeatureFlagPlugin = <
           ...options,
           wrapperInfo: options.wrapperInfo ?? WRAPPER_INFO,
         });
-        await client.ready();
+        try {
+          await client.ready();
+        } catch (err) {
+          initPromise = null;
+          options.onError?.(err instanceof Error ? err : new Error(String(err)));
+          throw err;
+        }
 
         flagClientRef.value = client;
         readyRef.value = true;
@@ -94,7 +100,9 @@ const createFeatureFlagPlugin = <
     }
 
     if (!options.deferInitialization) {
-      void init();
+      void init().catch(() => {
+        // onError already reported the failure
+      });
     }
   },
 });
