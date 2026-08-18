@@ -55,12 +55,22 @@ export function useFlagmint<T = unknown>() {
     await client.updateContext(context);
   };
 
+  const trackError = (flagKey: string, error?: unknown, extra?: Record<string, unknown>): void => {
+    clientRef.value?.trackError?.(flagKey, error, extra);
+  };
+
+  const track = (flagKey: string, eventName: string, extra?: Record<string, unknown>): void => {
+    clientRef.value?.track?.(flagKey, eventName, extra);
+  };
+
   return {
     client: clientRef,
     isReady,
     init,
     flags,
     getFlag,
-    updateFlagmintContext
+    updateFlagmintContext,
+    trackError,
+    track,
   };
 }

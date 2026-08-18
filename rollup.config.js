@@ -15,6 +15,7 @@ const envReplacements = replace({
 const SHARED_EXTERNAL = [
   'vue',
   'vue-demi',
+  'flagmint-js-sdk',
   'sdk/types'
 ];
 export default [
