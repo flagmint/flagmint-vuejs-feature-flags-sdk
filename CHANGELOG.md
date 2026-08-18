@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Depend on `flagmint-js-sdk` ^2.0.0 (SSE transport; `transportMode: 'auto' | 'sse' | 'long-polling'`).
 - Pass `enableFlagmint` through from plugin options instead of forcing a connection.
+- Remove Vue-level iframe leader election. Tab/iframe sharing is handled by `flagmint-js-sdk` (`shareConnection`).
 
 ### Added
 - `trackError` / `track` on `useFlagmint()` and the Vue 2 mixin, gated by Analytics Tracking on the flag.
