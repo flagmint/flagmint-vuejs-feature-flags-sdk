@@ -286,7 +286,7 @@ flagClient.setFlags([flag1, flag2], segmentsById);
 
 Using `transportMode: 'sse'` or `'auto'`, flags update live when changed.
 
-Fallback to polling if SSE fails.
+With `transportMode: 'auto'`, the SDK falls back to HTTP long-polling if SSE fails. With `transportMode: 'sse'`, no fallback occurs.
 
 ---
 
