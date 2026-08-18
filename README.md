@@ -6,7 +6,7 @@ Supports:
 
 ✅ Client-side flag evaluation  
 ✅ Segment targeting and rollout strategies  
-✅ WebSocket or HTTP long-polling  
+✅ Server-Sent Events (SSE) or HTTP long-polling  
 ✅ Offline caching and preview mode  
 ✅ Vue 2 and Vue 3 plugin, composables, and helpers
 
@@ -31,6 +31,7 @@ import { createFlagmintPlugin } from 'flagmint-vuejs-feature-flags';
 
 Vue.use(createFlagmintPlugin({
   apiKey: 'your-api-key',
+  enableFlagmint: true,
   context: { user_id: 'abc123', country: 'NG' },
   transportMode: 'auto',
   autoRefresh: true,
@@ -54,6 +55,7 @@ const app = createApp(App);
 
 app.use(createFlagmintPlugin({
   apiKey: 'your-api-key',
+  enableFlagmint: true,
   context: { user_id: 'abc123' },
   transportMode: 'auto',
   previewMode: false
@@ -71,6 +73,7 @@ app.mount('#app');
 ```ts
 interface FlagClientOptions {
   apiKey: string;
+  enableFlagmint: boolean; // true to connect; false skips the network and evaluation cost
   context?: Record<string, any>;
   autoRefresh?: boolean;
   refreshIntervalMs?: number;
@@ -78,7 +81,7 @@ interface FlagClientOptions {
   env?: string; // production | staging
   enableOfflineCache?: boolean;
   cacheTTL?: number;
-  transportMode?: 'auto' | 'websocket' | 'long-polling';
+  transportMode?: 'auto' | 'sse' | 'long-polling';
   previewMode?: boolean;
   onError?: (err: Error) => void;
 }
@@ -90,7 +93,7 @@ interface FlagClientOptions {
 
 ### ✅ Recommended (Reactive Flags)
 
-Subscribe to flag updates so your component re-renders automatically on every WebSocket push:
+Subscribe to flag updates so your component re-renders automatically on every SSE push:
 
 ```ts
 // Vue 3 Composition API
@@ -187,7 +190,7 @@ import { useFlagmint } from 'flagmint-vuejs-feature-flags';
 
 export default {
   setup() {
-    const { getFlag, isReady } = useFlagmint();
+    const { getFlag, isReady, trackError } = useFlagmint();
     const feature = computed(() => getFlag('chat-enabled', false));
     return { feature };
   }
@@ -229,7 +232,7 @@ import { BoolFeatureGate } from 'flagmint-vuejs-feature-flags/vue3/Feature';
 
 `feature-keys` accepts a single string or an array of strings. If multiple keys are provided, **all** must be enabled.
 
-> ⚠️ **Important:** Never call `client.destroy()` from within a component or composable. `destroy()` tears down the shared WebSocket connection for the entire application. If you're building a custom integration around `FlagClient`, only ever call `client.subscribe()` and its returned unsubscribe function for component-level cleanup.
+> ⚠️ **Important:** Never call `client.destroy()` from within a component or composable. `destroy()` tears down the shared SSE connection for the entire application. If you're building a custom integration around `FlagClient`, only ever call `client.subscribe()` and its returned unsubscribe function for component-level cleanup.
 
 ---
 
@@ -243,6 +246,7 @@ Enable `previewMode: true` in `FlagClientOptions` to evaluate flags **locally on
 ```ts
 createFlagmintPlugin({
   previewMode: true,
+  enableFlagmint: false,
   context: { user_id: 'test' }
 });
 ```
@@ -270,9 +274,34 @@ flagClient.setFlags([flag1, flag2], segmentsById);
 
 ## 🔁 Realtime Updates
 
-Using `transportMode: 'websocket'` or `'auto'`, flags update live when changed.
+Using `transportMode: 'sse'` or `'auto'`, flags update live when changed.
 
-Fallback to polling if WebSocket fails.
+Fallback to polling if SSE fails.
+
+---
+
+## 📊 Application error tracking
+
+Call `trackError` after a flag was served if that variation hurt the user. The JS SDK no-ops when **Analytics Tracking** is off for that flag. The server also drops those events.
+
+```ts
+// Vue 3
+const { getFlag, trackError } = useFlagmint();
+
+try {
+  await submitPayment();
+} catch (error) {
+  trackError('checkout_redesign', error, { step: 'payment' });
+  throw error;
+}
+```
+
+```ts
+// Vue 2 mixin
+this.trackError('checkout_redesign', error);
+```
+
+`track(flagKey, eventName)` uses the same pipe for custom metrics. Only `kind: 'error'` is counted in app error rate today.
 
 ---
 
@@ -320,7 +349,7 @@ Contributions are welcome! Here's how to get started:
 * [x] Rollout strategies
 * [x] Preview/local-only mode
 * [x] Composables and mixins
-* [x] WebSocket + fallback
+* [x] SSE + long-polling fallback
 * [x] Feature component
 * [ ] SSR / Nuxt support
 * [ ] Variant analytics
@@ -336,10 +365,10 @@ Contributions are welcome! Here's how to get started:
 - Verify `context` is properly set with required attributes
 - If using `previewMode: true`, ensure you've called `flagClient.setFlags()`
 
-### WebSocket connection fails
-- The SDK automatically falls back to long-polling
+### SSE connection fails
+- With `transportMode: 'auto'` the SDK falls back to long-polling
 - Check network connectivity and CORS settings
-- Verify the API server supports WebSocket connections
+- Verify the API server exposes `GET /evaluator/v2/flags/stream`
 - Check browser console for connection errors
 
 ### Component re-renders not happening on flag updates
