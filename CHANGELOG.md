@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.4.0] - 2026-08-18
+
+### Changed
+- Depend on `flagmint-js-sdk` ^2.0.0 (SSE transport; `transportMode: 'auto' | 'sse' | 'long-polling'`).
+- Pass `enableFlagmint` through from plugin options instead of forcing a connection.
+
+### Added
+- `trackError` / `track` on `useFlagmint()` and the Vue 2 mixin, gated by Analytics Tracking on the flag.
+- `createFlagmintPlugin` alias for `createFeatureFlagPlugin`.
+
 ## [1.3.7] - 2026-06-29
 
 ### Fixed

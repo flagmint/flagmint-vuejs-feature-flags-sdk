@@ -3,6 +3,8 @@ import { FlagClient, FlagClientOptions } from 'flagmint-js-sdk';
 import { readonly, ref, Ref, triggerRef } from 'vue-demi';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT, FLAGMINT_STATE } from '@/types';
 
+const WRAPPER_INFO = { name: 'flagmint-vuejs-feature-flags', version: '1.4.0' };
+
 const createFeatureFlagPlugin = <
   T = unknown,
   C extends Record<string, any> = Record<string, any>
@@ -31,7 +33,11 @@ const createFeatureFlagPlugin = <
       if (initPromise) return initPromise;
 
       initPromise = (async () => {
-        const client = new FlagClient<T, C>(options);
+        const client = new FlagClient<T, C>({
+          transportMode: 'auto',
+          ...options,
+          wrapperInfo: options.wrapperInfo ?? WRAPPER_INFO,
+        });
         await client.ready();
 
         flagClientRef.value = client;
@@ -93,4 +99,4 @@ const createFeatureFlagPlugin = <
   },
 });
 
-export { createFeatureFlagPlugin };
+export { createFeatureFlagPlugin, createFeatureFlagPlugin as createFlagmintPlugin };

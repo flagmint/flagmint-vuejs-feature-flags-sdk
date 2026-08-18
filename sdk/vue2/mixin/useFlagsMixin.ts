@@ -13,6 +13,8 @@ type FlagsMixinThis = {
   _flagmintUnsubscribe: (() => void) | null;
   _startFlagSubscription: () => void;
   updateFlagmintContext: (context: Record<string, any>) => Promise<void>;
+  trackError: (flagKey: string, error?: unknown, extra?: Record<string, unknown>) => void;
+  track: (flagKey: string, eventName: string, extra?: Record<string, unknown>) => void;
 };
 
 export const useFlagsMixin: {
@@ -28,6 +30,8 @@ export const useFlagsMixin: {
     getFlag(this: FlagsMixinThis, key: string, fallback?: any): any;
     _startFlagSubscription(this: FlagsMixinThis): void;
     updateFlagmintContext(this: FlagsMixinThis, context: Record<string, any>): Promise<void>;
+    trackError(this: FlagsMixinThis, flagKey: string, error?: unknown, extra?: Record<string, unknown>): void;
+    track(this: FlagsMixinThis, flagKey: string, eventName: string, extra?: Record<string, unknown>): void;
   };
 } & ThisType<FlagsMixinThis> = {
   data() {
@@ -78,7 +82,7 @@ export const useFlagsMixin: {
       if (!client || this._flagmintUnsubscribe) return;
 
       // subscribe() calls back immediately with current flags,
-      // then on every WebSocket push — updates this.flags reactively
+      // then on every SSE push — updates this.flags reactively
       this._flagmintUnsubscribe = client.subscribe((updatedFlags) => {
         this.flags = updatedFlags as Record<string, unknown>;
       });
@@ -94,6 +98,12 @@ export const useFlagsMixin: {
       } else {
         console.warn('[Flagmint] updateFlagmintContext called before client was ready.');
       }
-    }
+    },
+    trackError(flagKey, error, extra) {
+      this.flagClient?.trackError?.(flagKey, error, extra);
+    },
+    track(flagKey, eventName, extra) {
+      this.flagClient?.track?.(flagKey, eventName, extra);
+    },
   },
 };
