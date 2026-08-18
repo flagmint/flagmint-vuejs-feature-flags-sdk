@@ -9,7 +9,6 @@ Supports:
 ✅ Server-Sent Events (SSE) or HTTP long-polling  
 ✅ Offline caching and preview mode  
 ✅ Vue 2 and Vue 3 plugin, composables, and helpers
-✅ Cross-Iframe & Multi-Tab Socket Optimization (Leader Election)
 ---
 
 ## 🔧 Installation
@@ -35,11 +34,7 @@ Vue.use(createFlagmintPlugin({
   context: { user_id: 'abc123', country: 'NG' },
   transportMode: 'auto',
   autoRefresh: true,
-  previewMode: false,
-  // Optional Cross-Iframe Optimization Parameters:
-  syncCrossIframes: true,
-  syncNamespace: 'wsd_app_prod'
-
+  previewMode: false
 }));
 
 new Vue({ render: h => h(App) }).$mount('#app');
@@ -62,10 +57,7 @@ app.use(createFlagmintPlugin({
   enableFlagmint: true,
   context: { user_id: 'abc123' },
   transportMode: 'auto',
-  previewMode: false,
-   // Optional Cross-Iframe Optimization Parameters:
-  syncCrossIframes: true,
-  syncNamespace: 'wsd_app_prod'
+  previewMode: false
 }));
 
 app.mount('#app');
@@ -91,27 +83,14 @@ interface FlagClientOptions {
   transportMode?: 'auto' | 'sse' | 'long-polling';
   previewMode?: boolean;
   onError?: (err: Error) => void;
-
-  // Framework Extension Parameters
   deferInitialization?: boolean;
-  syncCrossIframes?: boolean; // Collapses multiple nested iframes/tabs down to 1 open socket
-  syncNamespace?: string;     // Unique isolation scope descriptor to prevent account data bleed
+  shareConnection?: boolean; // js-sdk shares one SSE stream across same-origin tabs/iframes. Default: true in browsers.
 }
 ```
 
 ---
 
 ## 🎯 Using Flags
-
-### Cross-Iframe & Multi-Tab Connection Sharing
-
-When embedding your Vue application multiple times on a single webpage using nested `iframe` configurations (or when a user leaves your app open across multiple simultaneous browser windows), initializing separate WebSockets or SSE streams per view causes significant connection overhead.
-
-Setting syncCrossIframes: true leverages a reactive browser mesh network strategy via the BroadcastChannel API and Page Visibility API to solve this issue seamlessly.
-
-```
-🔒 Security Notice: Always match your syncNamespace parameter configuration with your underlying profile or customer session parameters (e.g. syncNamespace: currentSiteId). This isolates the messaging context and prevents separate client scopes from accidentally reading or blending flag variants in multi-tenant environments.
-
 
 ### ✅ Recommended (Reactive Flags)
 
