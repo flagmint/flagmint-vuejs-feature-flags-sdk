@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Document `shareConnection` as a first-class plugin option (passed through to the JS SDK; default `true` in browsers with `BroadcastChannel`).
 
+### Fixed
+- Reset `initPromise` (and tear down the client) if anything after `ready()` fails, so `init()` can retry and automatic init still reports via `onError`.
+- Clarify in README that shared SSE requires `BroadcastChannel`.
+
 ## [1.4.0] - 2026-08-18
 
 ### Changed
