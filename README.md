@@ -33,6 +33,7 @@ Vue.use(createFlagmintPlugin({
   enableFlagmint: true,
   context: { user_id: 'abc123', country: 'NG' },
   transportMode: 'auto',
+  // shareConnection: true, // default in browsers — one SSE stream across same-origin tabs/iframes
   autoRefresh: true,
   previewMode: false
 }));
@@ -57,6 +58,7 @@ app.use(createFlagmintPlugin({
   enableFlagmint: true,
   context: { user_id: 'abc123' },
   transportMode: 'auto',
+  // shareConnection: true, // default in browsers — one SSE stream across same-origin tabs/iframes
   previewMode: false
 }));
 
@@ -214,13 +216,27 @@ export default {
 
 ---
 
-## 💡 Debugging Broadcast Channels in DevTools
+## 🔗 Connection sharing (`shareConnection`)
 
-To verify that multiple frames are collapsing down to a single socket on your local device environment:
-- Open Chrome/Edge DevTools (F12) and head to the Application tab.
-- In the left panel section menu, find Background Services and click on Broadcast Channels.
-- Reload your project page setup. You will see your namespace registration signature.
-- Click on your project Network panel tab. Confirm that switching windows or updating your cloud variables updates all views concurrently while creating exactly one websocket initialization record track.
+Same-origin tabs and iframes that share an API key use **one** SSE connection when `BroadcastChannel` is available (handled by `flagmint-js-sdk`, not Vue-level leader election). Defaults to `true` in those browsers.
+
+```ts
+createFlagmintPlugin({
+  apiKey: 'your-api-key',
+  enableFlagmint: true,
+  shareConnection: true,  // default in browsers with BroadcastChannel
+  // shareConnection: false, // two clients / two contexts / two streams
+});
+```
+
+Set `shareConnection: false` if two clients on the page must keep different evaluation contexts, or if the origin hosts untrusted documents.
+
+### Debugging Broadcast Channels in DevTools
+
+To verify that multiple frames collapse to a single stream:
+- Open Chrome/Edge DevTools → **Application** → **Background Services** → **Broadcast Channels**.
+- Reload the page; you should see the `flagmint-share:<apiKey>` channel.
+- In **Network**, confirm only one EventSource/SSE stream opens while all views stay in sync.
 ---
 
 ## 🧩 Feature Component
