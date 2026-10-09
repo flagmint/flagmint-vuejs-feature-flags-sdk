@@ -1,9 +1,9 @@
 import { isVue2, isVue3 } from 'vue-demi';
 import { FlagClient, FlagClientOptions } from 'flagmint-js-sdk';
-import { readonly, ref, Ref, triggerRef } from 'vue-demi';
+import { markRaw, readonly, ref, shallowRef, Ref, triggerRef } from 'vue-demi';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT, FLAGMINT_STATE } from '@/types';
 
-const WRAPPER_INFO = { name: 'flagmint-vuejs-feature-flags', version: '1.4.0' };
+const WRAPPER_INFO = { name: 'flagmint-vuejs-feature-flags', version: '2.1.0' };
 
 const createFeatureFlagPlugin = <
   T = unknown,
@@ -13,7 +13,7 @@ const createFeatureFlagPlugin = <
 ) => ({
   install(appOrVue: any) {
     // Scoped to this install call — no shared module-level state
-    const flagClientRef: Ref<FlagClient<T, C> | null> = ref(null);
+    const flagClientRef: Ref<FlagClient<T, C> | null> = shallowRef(null);
     const readyRef = ref(false);
     const flagStateRef = ref(0);
     //single in-flight promise shared across all concurrent init() callers
@@ -46,7 +46,7 @@ const createFeatureFlagPlugin = <
           throw err;
         }
 
-        flagClientRef.value = client;
+        flagClientRef.value = markRaw(client);
         readyRef.value = true;
 
         client.subscribe(() => {
