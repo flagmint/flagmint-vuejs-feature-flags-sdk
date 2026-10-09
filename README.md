@@ -33,7 +33,7 @@ Vue.use(createFlagmintPlugin({
   enableFlagmint: true,
   context: { user_id: 'abc123', country: 'NG' },
   transportMode: 'auto',
-  // shareConnection: true, // default in browsers — one SSE stream across same-origin tabs/iframes
+  // shareConnection: true, // default when BroadcastChannel is available — one shared SSE stream; without it each client opens its own
   autoRefresh: true,
   previewMode: false
 }));
@@ -58,7 +58,7 @@ app.use(createFlagmintPlugin({
   enableFlagmint: true,
   context: { user_id: 'abc123' },
   transportMode: 'auto',
-  // shareConnection: true, // default in browsers — one SSE stream across same-origin tabs/iframes
+  // shareConnection: true, // default when BroadcastChannel is available — one shared SSE stream; without it each client opens its own
   previewMode: false
 }));
 
