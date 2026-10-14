@@ -80,13 +80,14 @@ interface FlagClientOptions {
   refreshIntervalMs?: number;
   persistContext?: boolean;
   env?: string; // production | staging
-  enableOfflineCache?: boolean;
+  enableOfflineCache?: boolean; // also persists signed rules when configSync is on
   cacheTTL?: number;
   transportMode?: 'auto' | 'sse' | 'long-polling';
+  configSync?: boolean; // local evaluation — download signed rules and run getFlag in-process (default false)
   previewMode?: boolean;
   onError?: (err: Error) => void;
   deferInitialization?: boolean;
-  shareConnection?: boolean; // js-sdk shares one SSE stream across same-origin tabs/iframes. Default: true in browsers.
+  shareConnection?: boolean; // js-sdk shares one SSE stream across same-origin tabs/iframes. Default: true in browsers with BroadcastChannel (false when configSync is on).
 }
 ```
 
@@ -216,15 +217,35 @@ export default {
 
 ---
 
-## 🔗 Connection sharing (`shareConnection`)
+## 📦 Local evaluation (`configSync`)
 
-Same-origin tabs and iframes that share an API key use **one** SSE connection when `BroadcastChannel` is available (handled by `flagmint-js-sdk`, not Vue-level leader election). Defaults to `true` in those browsers.
+By default the SDK uses **server evaluation**: Flagmint computes flag values and streams the results. Set `configSync: true` to opt into **local evaluation** (config sync): the stream delivers signed rules (`lease` / `fullConfig` / `delta`), and `getFlag()` evaluates in-process.
+
+Requires **Flagmint API 1.7.0+** and **`flagmint-js-sdk` 2.2.2-rc.0** (this Vue package depends on `2.2.2-rc.0`). Passed through to the JS SDK like other `FlagClientOptions`.
 
 ```ts
 createFlagmintPlugin({
   apiKey: 'your-api-key',
   enableFlagmint: true,
-  shareConnection: true,  // default in browsers with BroadcastChannel
+  configSync: true,          // local evaluation
+  enableOfflineCache: true,  // persist rules between reloads (default true)
+});
+```
+
+Notes:
+- With `configSync: true`, `shareConnection` defaults to **false** (rules are not shared across tabs yet).
+- Expired lease **fail-closes** to defaults only until the stream refreshes rules.
+- Classic server evaluation remains the default if you omit `configSync`.
+
+## 🔗 Connection sharing (`shareConnection`)
+
+Same-origin tabs and iframes that share an API key use **one** SSE connection when `BroadcastChannel` is available (handled by `flagmint-js-sdk`, not Vue-level leader election). Defaults to `true` in those browsers (and to `false` when `configSync` is on).
+
+```ts
+createFlagmintPlugin({
+  apiKey: 'your-api-key',
+  enableFlagmint: true,
+  shareConnection: true,  // default in browsers with BroadcastChannel (unless configSync)
   // shareConnection: false, // two clients / two contexts / two streams
 });
 ```
