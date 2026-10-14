@@ -221,7 +221,7 @@ export default {
 
 By default the SDK uses **server evaluation**: Flagmint computes flag values and streams the results. Set `configSync: true` to opt into **local evaluation** (config sync): the stream delivers signed rules (`lease` / `fullConfig` / `delta`), and `getFlag()` evaluates in-process.
 
-Requires **Flagmint API 1.7.0+** and **`flagmint-js-sdk` 2.2.2-rc.0** (this Vue package depends on `2.2.2-rc.0`). Passed through to the JS SDK like other `FlagClientOptions`.
+Requires **Flagmint API 1.7.0+** and **`flagmint-js-sdk` 2.2.2+** (this Vue package depends on `^2.2.2`). Passed through to the JS SDK like other `FlagClientOptions`.
 
 ```ts
 createFlagmintPlugin({
