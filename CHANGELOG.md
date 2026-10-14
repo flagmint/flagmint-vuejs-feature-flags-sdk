@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.1.0] - 2026-10-14
+
+### Changed
+- Depend on `flagmint-js-sdk` ^2.2.2 (config-sync PII hash-before-compare / `hmac-v1`, plus prior config-sync / stream / sharing fixes).
+- Store the `FlagClient` in a `shallowRef` + `markRaw` so Vue does not deeply proxy the client (important for `shareConnection` / BroadcastChannel).
+
+### Added
+- Document `shareConnection` as a first-class plugin option (passed through to the JS SDK; default `true` in browsers with `BroadcastChannel`).
+- Document `configSync` (local evaluation / signed rules) in the README — passed through to `flagmint-js-sdk` ^2.2.2.
+
+### Fixed
+- Reset `initPromise` (and tear down the client) if anything after `ready()` fails, so `init()` can retry and automatic init still reports via `onError`.
+- Clarify in README that shared SSE requires `BroadcastChannel`.
+
 ## [1.4.0] - 2026-08-18
 
 ### Changed
