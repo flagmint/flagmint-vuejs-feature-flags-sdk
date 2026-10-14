@@ -5,24 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.0-rc.1] - 2026-10-14
-
-Prerelease for staging validation (pairs with `flagmint-js-sdk` 2.2.2-rc.0).
+## [2.1.0] - 2026-10-14
 
 ### Changed
-- Depend on `flagmint-js-sdk` `2.2.2-rc.0` (config-sync PII hash-before-compare / `hmac-v1`).
-
-## [2.1.0-rc.0] - 2026-10-09
-
-Prerelease for  staging validation. Same contents as the upcoming 2.1.0.
-
-### Changed
-- Depend on `flagmint-js-sdk` ^2.2.1 (config-sync, stream hosts, connection sharing fixes).
+- Depend on `flagmint-js-sdk` ^2.2.2 (config-sync PII hash-before-compare / `hmac-v1`, plus prior config-sync / stream / sharing fixes).
 - Store the `FlagClient` in a `shallowRef` + `markRaw` so Vue does not deeply proxy the client (important for `shareConnection` / BroadcastChannel).
 
 ### Added
 - Document `shareConnection` as a first-class plugin option (passed through to the JS SDK; default `true` in browsers with `BroadcastChannel`).
-- Document `configSync` (local evaluation / signed rules) in the README — passed through to `flagmint-js-sdk` ^2.2.1.
+- Document `configSync` (local evaluation / signed rules) in the README — passed through to `flagmint-js-sdk` ^2.2.2.
 
 ### Fixed
 - Reset `initPromise` (and tear down the client) if anything after `ready()` fails, so `init()` can retry and automatic init still reports via `onError`.
