@@ -362,11 +362,11 @@ This project follows [Semantic Versioning](https://semver.org/). Releases are au
 
 **To release a new version:**
 1. Update the version in `package.json`
-2. Update [CHANGELOG.md](https://github.com/jtad009/flagmint-vuejs-feature-flags-sdk/blob/main/CHANGELOG.md) with your changes
+2. Update [CHANGELOG.md](https://github.com/flagmint/flagmint-vuejs-feature-flags-sdk/blob/main/CHANGELOG.md) with your changes
 3. Push to `main` branch
 4. The workflow handles the rest
 
-See [CHANGELOG.md](https://github.com/jtad009/flagmint-vuejs-feature-flags-sdk/blob/main/CHANGELOG.md) for version history and release notes.
+See [CHANGELOG.md](https://github.com/flagmint/flagmint-vuejs-feature-flags-sdk/blob/main/CHANGELOG.md) for version history and release notes.
 
 ---
 

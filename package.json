@@ -17,6 +17,14 @@
   "description": "A Vue.js SDK for managing feature flags in Flagmint applications, supporting both Vue 2 and Vue 3.",
   "author": "Flagmint Team",
   "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flagmint/flagmint-vuejs-feature-flags-sdk.git"
+  },
+  "homepage": "https://github.com/flagmint/flagmint-vuejs-feature-flags-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/flagmint/flagmint-vuejs-feature-flags-sdk/issues"
+  },
   "files": [
     "dist",
     "vue2",
