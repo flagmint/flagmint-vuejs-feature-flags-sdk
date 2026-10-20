@@ -3,7 +3,7 @@ import { FlagClient, FlagClientOptions } from 'flagmint-js-sdk';
 import { markRaw, readonly, ref, shallowRef, Ref, triggerRef } from 'vue-demi';
 import { FLAGMINT_READY, FLAGMINT_CLIENT, FLAGMINT_INIT, FLAGMINT_STATE } from '@/types';
 
-const WRAPPER_INFO = { name: 'flagmint-vuejs-feature-flags', version: '2.1.0' };
+const WRAPPER_INFO = { name: 'flagmint-vuejs-feature-flags', version: '2.1.1' };
 
 /**
  * Report an init failure to `onError` and normalize non-Error throws.
